@@ -185,7 +185,7 @@ ffi.cdef("""
 
 
 Alignment = namedtuple('Alignment', [
-    'rname', 'orient', 'pos', 'mapq', 'cigar', 'NM'
+    'rname', 'orient', 'pos', 'mapq', 'cigar', 'NM', 'score', 'sub',
 ])
 
 class BwaAligner(object):
@@ -243,7 +243,7 @@ class BwaAligner(object):
         )
         return Alignment(
             ffi.string(self.index.bns.anns[aln.rid].name).decode(),
-            '+-'[aln.is_rev], aln.pos, aln.mapq, cigar, aln.NM
+            '+-'[aln.is_rev], aln.pos, aln.mapq, cigar, aln.NM, aln.score, aln.sub
         )
 
     def align_seq(self, seq:str):
