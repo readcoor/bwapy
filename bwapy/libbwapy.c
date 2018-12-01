@@ -107,16 +107,23 @@ mem_aln_v *align(mem_opt_t *opt, bwaidx_t *idx, char *seq) {
 	mem_alnreg_v ar = mem_align1(opt, idx->bwt, idx->bns, idx->pac, seq_len, seq);
 
 	// check if we take all or only primary alignments
-	int take_all = opt->flag | MEM_F_ALL;
-	size_t n_alns = take_all ? ar.n : count_primary(&ar);
+	int take_all = opt->flag & MEM_F_ALL;
+	//size_t n_alns = take_all ? ar.n : count_primary(&ar);
 
+	size_t n_alns = 0;
+	for (size_t i = 0; i < ar.n; ++i) {
+		if (!take_all && ar.a[i].secondary >= 0) continue;
+		if (ar.a[i].score < opt->T) continue;
+		++n_alns;
+	}
 	// allocate memory for the result if there any
-	mem_aln_v *alns = n_alns ? new_mem_aln_v(ar.n) : NULL;
+	mem_aln_v *alns = n_alns ? new_mem_aln_v(n_alns) : NULL;
 
 	// copy results (if there are any)
 	size_t j=0;
-        for (size_t i=0; i < ar.n; ++i) {
-		if (!take_all && ar.a[i].secondary) continue;
+    for (size_t i=0; i < ar.n; ++i) {
+		if (!take_all && ar.a[i].secondary >= 0) continue;
+		if (ar.a[i].score < opt->T) continue;
 		alns->aln[j++] = mem_reg2aln(opt, idx->bns, idx->pac, seq_len, seq, &ar.a[i]);
 	}
 
